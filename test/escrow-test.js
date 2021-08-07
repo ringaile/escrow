@@ -62,12 +62,13 @@ describe("Escrow", function () {
         const approve = await testToken.connect(owner).approve(escrow.address, 2);
         const deposit = await escrow.connect(owner).deposit(addr1.address, 1, 1, { value: ethers.utils.parseEther("1")});
   
-        latestBlock = await network.provider.send("eth_getBlockByNumber", ["latest", true]);
+        let latestBlock = await network.provider.send("eth_getBlockByNumber", ["latest", false]);
         expectedBlock = parseInt(latestBlock.timestamp, 16) + 1;
-
         expect(await escrow.expirations(addr1.address, testToken.address)).to.equal(expectedBlock);
+    });
 
-        
+    it("Should not allow to deposit if account has inssuficient balance", async function () {       
+        await expect(escrow.connect(addr2).deposit(addr1.address, 1, 1, { value: ethers.utils.parseEther("1")})).to.be.revertedWith("ERC20: transfer amount exceeds balance");
     });
 
   });

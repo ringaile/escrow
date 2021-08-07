@@ -21,25 +21,20 @@ contract Escrow {
       fee = _fee;
   }
 
-  modifier onlyOwner() {
-      require(msg.sender == owner);
-      _;
-  }
-
   modifier requiresFee() {
       require(msg.value < fee);
         _;
     }
 
   //TODO: seller is _payee
-  function deposit(address _payee, IERC20 _token, uint256 _amount, uint256 _expiration) public onlyOwner requiresFee payable {
+  function deposit(address _payee, IERC20 _token, uint256 _amount, uint256 _expiration) public requiresFee payable {
       require(_token.transferFrom(msg.sender, address(this), _amount));
       deposits[_payee][address(_token)] += _amount;
       expirations[_payee][address(_token)] = block.timestamp + _expiration;
       owner.transfer(fee);
   }
 
-  function withdraw(address payable _payee, IERC20 _token) public onlyOwner{
+  function withdraw(address payable _payee, IERC20 _token) public {
       require(block.timestamp > expirations[_payee][address(_token)], "The payment is still in escrow.");
       uint256 payment = deposits[_payee][address(_token)];
       deposits[_payee][address(_token)] = 0;

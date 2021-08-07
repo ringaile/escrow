@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract Escrow {
+contract EscrowERC721 {
 
   address payable owner;
   uint fee;

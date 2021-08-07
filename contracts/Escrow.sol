@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Escrow {
 
-  address payable owner;
-  uint fee;
+  address payable public owner;
+  uint public fee;
 
   event Deposited(address indexed payee, address tokenAddress, uint256 amount);
   event Withdrawn(address indexed payee, address tokenAddress, uint256 amount);

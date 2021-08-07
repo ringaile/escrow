@@ -9,7 +9,9 @@ contract Escrow {
   address payable owner;
   uint fee;
 
-  // assuming that there could be few tokens.
+  event Deposited(address indexed payee, address tokenAddress, uint256 amount);
+  event Withdrawn(address indexed payee, address tokenAddress, uint256 amount);
+
   // payee address => token address => amount
   mapping(address => mapping(address => uint256)) public deposits;
 
@@ -31,6 +33,7 @@ contract Escrow {
       deposits[_payee][address(_token)] += _amount;
       expirations[_payee][address(_token)] = block.timestamp + _expiration;
       owner.transfer(fee);
+      emit Deposited(_payee, address(_token), _amount);
   }
 
   function withdraw(address payable _payee, IERC20 _token) public {
@@ -38,6 +41,7 @@ contract Escrow {
       uint256 payment = deposits[_payee][address(_token)];
       deposits[_payee][address(_token)] = 0;
       require(_token.transfer(msg.sender, payment));
+      emit Withdrawn(_payee, address(_token), payment);
   }
 
 }

@@ -20,6 +20,9 @@ contract Escrow {
 
   mapping(uint256 => ERC721Item) public erc721Items;
 
+  event Deposited(address indexed payee, address tokenAddress, uint256 item);
+  event Withdrawn(address indexed payee, address tokenAddress, uint256 item);
+
   constructor(uint _fee) {
       owner = payable(msg.sender);
       fee = _fee;
@@ -43,15 +46,17 @@ contract Escrow {
       });
       counter += 1;
       owner.transfer(fee);
+      emit Deposited(_payee, address(_token), _item);
   }
 
   function withdrawERC721(uint256 _id) public {
       require(block.timestamp > erc721Items[_id].expiration, "The item is still in escrow.");
       address tokenAddress = erc721Items[_id].tokenAddress;
-      address buyer = erc721Items[_id].buyer;
+      address seller = erc721Items[_id].seller;
       uint256 itemId = erc721Items[_id].item;
       delete(erc721Items[_id]);
-      IERC721(tokenAddress).transferFrom(address(this), buyer, itemId);
+      IERC721(tokenAddress).transferFrom(address(this), seller, itemId);
+      emit Withdrawn(seller, tokenAddress, itemId);
   }
 
 }

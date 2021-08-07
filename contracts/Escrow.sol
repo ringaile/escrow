@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Escrow {
 
-  address owner;
-  uint256 expiration;
+  address payable owner;
+  uint fee;
 
   // assuming that there could be few tokens.
   // payee address => token address => amount
@@ -16,9 +16,9 @@ contract Escrow {
   // payee address => token address => expiration time
   mapping(address => mapping(address => uint256)) public expirations;
 
-  constructor(uint _expiration) {
-      owner = msg.sender;
-      expiration = _expiration;
+  constructor(uint _fee) {
+      owner = payable(msg.sender);
+      fee = _fee;
   }
 
   modifier onlyOwner() {
@@ -26,11 +26,17 @@ contract Escrow {
       _;
   }
 
+  modifier requiresFee() {
+      require(msg.value < fee);
+        _;
+    }
+
   //TODO: seller is _payee
-  function deposit(address _payee, IERC20 _token, uint256 _amount) public onlyOwner payable{
+  function deposit(address _payee, IERC20 _token, uint256 _amount, uint256 _expiration) public onlyOwner requiresFee payable {
       require(_token.transferFrom(msg.sender, address(this), _amount));
       deposits[_payee][address(_token)] += _amount;
-      expirations[_payee][address(_token)] = block.timestamp + expiration;
+      expirations[_payee][address(_token)] = block.timestamp + _expiration;
+      owner.transfer(fee);
   }
 
   function withdraw(address payable _payee, IERC20 _token) public onlyOwner{

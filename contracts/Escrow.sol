@@ -26,7 +26,6 @@ contract Escrow {
         _;
     }
 
-  //TODO: seller is _payee
   function deposit(address _payee, IERC20 _token, uint256 _amount, uint256 _expiration) public requiresFee payable {
       require(_token.transferFrom(msg.sender, address(this), _amount));
       deposits[_payee][address(_token)] += _amount;

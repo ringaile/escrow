@@ -29,7 +29,18 @@ contract Escrow {
   modifier requiresFee() {
       require(msg.value >= fee, "Not enough value.");
         _;
-    }
+  }
+
+  modifier onlyOwner() {
+      require(msg.sender == owner, "Must be an owner.");
+        _;
+  }
+
+  function transferFee() public onlyOwner {
+      token.approve(owner, collectedFee);
+      token.transfer(owner, collectedFee);
+      collectedFee = 0;
+  }
 
   function deposit(address _payee, uint256 _amount, uint256 _expiration) public requiresFee payable {
       token.transferFrom(msg.sender, address(this), _amount + fee);
@@ -43,7 +54,8 @@ contract Escrow {
       require(block.timestamp > expirations[_payee][address(token)], "The payment is still in escrow.");
       uint256 payment = deposits[_payee][address(token)];
       deposits[_payee][address(token)] = 0;
-      require(token.transfer(msg.sender, payment));
+      token.approve(_payee, payment);
+      require(token.transfer(_payee, payment));
       emit Withdrawn(_payee, address(token), payment);
   }
 

@@ -8,7 +8,7 @@ contract Escrow {
 
   address payable public owner;
   uint public fee;
-  uint totalAmount;
+  uint collectedFee;
   IERC20 token;
 
   event Deposited(address indexed payee, address tokenAddress, uint256 amount);
@@ -35,7 +35,7 @@ contract Escrow {
       token.transferFrom(msg.sender, address(this), _amount + fee);
       deposits[_payee][address(token)] += _amount;
       expirations[_payee][address(token)] = block.timestamp + _expiration;
-      totalAmount += fee;
+      collectedFee += fee;
       emit Deposited(_payee, address(token), _amount);
   }
 

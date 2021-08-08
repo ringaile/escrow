@@ -26,6 +26,10 @@ describe("Escrow", function () {
     // mined.
     testToken = await TestToken.deploy();
     escrow = await Escrow.deploy(testToken.address, fee);
+
+    const approveTx = await testToken.connect(owner).approve(owner.address, 10000000000000);
+    // wait until the transaction is mined
+    await approveTx.wait();
   });
 
   describe("Deployment", function () {
@@ -46,11 +50,34 @@ describe("Escrow", function () {
       const deposit = await escrow.connect(owner).deposit(addr1.address, 1, 1, { value: ethers.utils.parseEther("1")});
 
       expect((await testToken.balanceOf(owner.address)).toNumber()).to.equal(9999999999998);
+      expect((await testToken.balanceOf(escrow.address)).toNumber()).to.equal(2);
     });
+
+    it("Should allow to deposit ERC20 compatible token from not an owner address", async function () {
+        const approveTx = await testToken.connect(owner).approve(addr1.address, 5);
+        // wait until the transaction is mined
+        await approveTx.wait();
+
+        const transferTx = await testToken.transferFrom(owner.address, addr1.address, 5);
+        await transferTx.wait();
+
+        expect((await testToken.balanceOf(addr1.address)).toNumber()).to.equal(5);
+
+        const approveEscrowTx = await testToken.connect(addr1).approve(escrow.address, 2);
+        await approveEscrowTx.wait();
+
+        const depositTx = await escrow.connect(addr1).deposit(addr2.address, 1, 1, { value: ethers.utils.parseEther("1")});
+        await depositTx.wait();
+        
+        expect((await testToken.balanceOf(addr1.address)).toNumber()).to.equal(3);
+        expect((await testToken.balanceOf(escrow.address)).toNumber()).to.equal(2);
+      });
 
     it("Should allow to see deposited amount of an account", async function () {
         const approve = await testToken.connect(owner).approve(escrow.address, 2);
         const deposit = await escrow.connect(owner).deposit(addr1.address, 1, 1, { value: ethers.utils.parseEther("1")});
+
+        await expect(deposit).to.emit(escrow, 'Deposited').withArgs(addr1.address, testToken.address, 1);
   
         expect(await escrow.deposits(addr1.address, testToken.address)).to.equal(1);
     });
@@ -67,9 +94,21 @@ describe("Escrow", function () {
         expect(await escrow.expirations(addr1.address, testToken.address)).to.equal(expectedBlock);
     });
 
-    it("Should not allow to deposit if account has inssuficient balance", async function () {       
-        await expect(escrow.connect(addr2).deposit(addr1.address, 1, 1, { value: ethers.utils.parseEther("1")})).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+    it("Should not allow to deposit if account has inssuficient balance", async function () {    
+        const approveTx = await testToken.connect(owner).approve(addr2.address, 1);
+        // wait until the transaction is mined
+        await approveTx.wait();
+
+        const transferTx = await testToken.transferFrom(owner.address, addr2.address, 1);
+        await transferTx.wait();
+
+        expect((await testToken.balanceOf(addr2.address)).toNumber()).to.equal(1);
+        
+        expect(escrow.connect(addr2).deposit(addr1.address, 1, 1, { value: ethers.utils.parseEther("1")})).to.be.revertedWith("ERC20: transfer amount exceeds balance");
     });
 
+  });
+
+  describe("Withdraw", function () {
   });
 });

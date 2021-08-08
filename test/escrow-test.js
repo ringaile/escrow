@@ -73,7 +73,7 @@ describe("Escrow", function () {
         expect((await testToken.balanceOf(owner.address)).toNumber()).to.equal(tokenSupply - addr1Balance + fee);
     });
 
-    it("Should not allow not owner address to collect fees", async function () {
+    it("Should not allow any address to collect fees", async function () {
         let addr1Balance = 5;
         let escrowAmount = 1;
         let expiration = 1;
@@ -114,8 +114,10 @@ describe("Escrow", function () {
       const depositTx= await escrow.connect(owner).deposit(addr1.address, escrowAmount, expiration, { value: ethers.utils.parseEther("1")});
       await depositTx.wait();
 
-      expect((await testToken.balanceOf(owner.address)).toNumber()).to.equal(9999999999998);
-      expect((await testToken.balanceOf(escrow.address)).toNumber()).to.equal(2);
+      await expect(depositTx).to.emit(escrow, 'Deposited').withArgs(addr1.address, testToken.address, escrowAmount);
+
+      expect((await testToken.balanceOf(owner.address)).toNumber()).to.equal(tokenSupply-escrowAmount-fee);
+      expect((await testToken.balanceOf(escrow.address)).toNumber()).to.equal(escrowAmount+fee);
     });
 
     it("Should allow to deposit ERC20 compatible token from not an owner address", async function () {
@@ -136,6 +138,8 @@ describe("Escrow", function () {
 
         const depositTx = await escrow.connect(addr1).deposit(addr2.address, escrowAmount, expiration, { value: ethers.utils.parseEther("1")});
         await depositTx.wait();
+
+        await expect(depositTx).to.emit(escrow, 'Deposited').withArgs(addr2.address, testToken.address, escrowAmount);
         
         expect((await testToken.balanceOf(addr1.address)).toNumber()).to.equal(addr1Balance-escrowAmount-fee);
         expect((await testToken.balanceOf(escrow.address)).toNumber()).to.equal(escrowAmount+fee);
@@ -164,6 +168,8 @@ describe("Escrow", function () {
 
         const depositTx = await escrow.connect(owner).deposit(addr1.address, escrowAmount, expiration, { value: ethers.utils.parseEther("1")});
         await depositTx.wait();
+
+        await expect(depositTx).to.emit(escrow, 'Deposited').withArgs(addr1.address, testToken.address, escrowAmount);
   
         let latestBlock = await network.provider.send("eth_getBlockByNumber", ["latest", false]);
         expectedBlock = parseInt(latestBlock.timestamp, 16) + expiration;
@@ -212,6 +218,8 @@ describe("Escrow", function () {
 
         const withdrawTx = await escrow.withdraw(addr1.address);
         await withdrawTx.wait();
+
+        await expect(withdrawTx).to.emit(escrow, 'Withdrawn').withArgs(addr1.address, testToken.address, escrowAmount);
 
         expect(await escrow.deposits(addr1.address, testToken.address)).to.equal(0);
         expect((await testToken.balanceOf(addr1.address)).toNumber()).to.equal(escrowAmount);

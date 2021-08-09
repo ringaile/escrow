@@ -1,7 +1,14 @@
-
 # ERC20 / ERC721 Escrow contracts
 
 ERC20 / ERC721 Escrow application built on Ethereum.
+Base escrow contract, holds tokens designated for a payee for a designated time. It can by withdrawn after the end of escrow time.
+
+## Features
+
+* The smart contract allows user to send any ERC20 or any ERC721 token for escrow.
+* The user can specify escrow time and the account that can claim it.
+* The contrat support batched escrow creation. 
+
 
 ## Installation
 

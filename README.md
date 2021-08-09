@@ -5,9 +5,16 @@ Base escrow contract, holds tokens designated for a payee for a designated time.
 
 ## Features
 
-* The smart contract allows user to send any ERC20 or any ERC721 token for escrow.
+* The smart contract **Escrow.sol** allows user to send any ERC20 token for escrow.
+* The smart contract **EscrowERC721.sol** allows user to send any ERC721 token for escrow.
 * The user can specify escrow time and the account that can claim it.
-* The contrat support batched escrow creation. 
+* The contract **EscrowFactory.sol** supports batched escrow **Escrow.sol** creation. 
+* The contract **EscrowERC721Factory.sol** supports batched escrow **EscrowERC721.sol** creation. 
+
+
+The following tokens are creating for testing purposes only:
+* ERC20TestToken.sol
+* ERC721TestToken.sol
 
 
 ## Installation

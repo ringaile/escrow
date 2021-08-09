@@ -12,7 +12,7 @@ Base escrow contract, holds tokens designated for a payee for a designated time.
 * The contract **EscrowERC721Factory.sol** supports batched escrow **EscrowERC721.sol** creation. 
 
 
-The following tokens are creating for testing purposes only:
+The following tokens are created for testing purposes only:
 * ERC20TestToken.sol
 * ERC721TestToken.sol
 
